@@ -1,28 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Grid, Card, CardContent, CardMedia, Button, CircularProgress, Box, Alert } from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, Button, CircularProgress, Box, Alert } from '@mui/material';
 import axiosInstance from '../../api/axiosInstance';
+import { useAuth } from '../../contexts/AuthContext';
 
 const StaffFieldListPage = () => {
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchFields = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get('/api/football/get-all-football');
+        // Gọi API lấy danh sách sân mà nhân viên này phụ trách
+        // Giả sử API nhận staffId qua query param hoặc từ token
+        const res = await axiosInstance.get('/api/football/get-football-by-staff');
+        if (!res.data.isSuccess) throw new Error('Không thể lấy danh sách sân bóng');
         setFields(res.data.result || []);
       } catch (err) {
-        setError('Không thể tải danh sách sân bóng.');
+        setError(err.message || 'Không thể tải danh sách sân bóng.');
       } finally {
         setLoading(false);
       }
     };
-    fetchFields();
-  }, []);
+    if (user) fetchFields();
+  }, [user]);
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
   if (error) return <Alert severity="error" sx={{ mt: 4 }}>{error}</Alert>;

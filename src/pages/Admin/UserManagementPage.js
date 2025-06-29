@@ -45,10 +45,13 @@ const UserManagementPage = () => {
 
     const handleToggleLock = async (userId) => {
         try {
-            // Using POST and the new endpoint structure from the API list
             const response = await axiosInstance.post(`/api/admin/lock-unlock/${userId}`);
             if (response.data.isSuccess) {
-                fetchUsers(); // Refresh list to show updated status
+                setUsers(prevUsers => prevUsers.map(u =>
+                    u.id === userId
+                        ? { ...u, trangThai: u.trangThai === 'LOCKED' ? 'ACTIVE' : 'LOCKED' }
+                        : u
+                ));
             } else {
                 setError(response.data.errorMessages?.join(', ') || 'An unknown error occurred.');
             }
